@@ -38,9 +38,6 @@ class ProductController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        // if($validatedData->fails()) {
-        //     return redirect()->routes('products.create')->withErrors($validatedData)->withInput();
-        // }
         $product = new Product();
         $product->name = $request->name;
         $product->sku = $request->sku;
@@ -72,15 +69,43 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+        return view('products.edit', compact('product'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update($id, Request $request)
     {
-        //
+        $product = Product::findOrFail($id);
+        $oldImage = $product->image;
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:255|unique:products,sku,'.$id,
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'status' => 'required|in:active,inactive',
+        ]);
+        
+        // $product = new Product();
+        $product->name = $request->name;
+        $product->sku = $request->sku;
+        $product->price = $request->price;
+        $product->status = $request->status;
+        $product->save();
+
+        if($request->hasFile('image')) {
+            if($oldImage && file_exists(public_path($oldImage))) {
+                unlink(public_path($oldImage));
+            }
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/products'), $imageName);
+            $product->image = 'uploads/products/' . $imageName;
+            $product->save();
+        }
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
