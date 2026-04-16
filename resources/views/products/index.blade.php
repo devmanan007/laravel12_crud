@@ -38,7 +38,37 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        @if($products->count() > 0)
+                            @foreach ($products as $product)
+                                <tr>
+                                    <td>{{ $product->id }}</td>
+                                    <td>
+                                        @if(!empty($product->image) && file_exists(public_path($product->image)))
+                                            <img class="rounded" src="{{ asset($product->image) }}" alt="Product Image" width="50">
+                                        @else
+                                            <img class="rounded" src="https://placehold.co/50" alt="Product Image" width="50">
+                                        @endif
+                                    </td>
+                                    <td>{{ $product->name }}</td>
+                                    <td>{{ $product->sku }}</td>
+                                    <td>${{ number_format($product->price, 2) }}</td>
+                                    <td><span class="badge bg-{{ $product->status == 'active' ? 'success' : 'danger' }}">{{ ucfirst($product->status) }}</span></td>
+                                    <td class="text-center">
+                                        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="7" class="text-center">No products found.</td>
+                                </tr>
+                        @endif
+                        <!-- <tr>
                             <td>1</td>
                             <td><img src="https://via.placeholder.com/50" alt="Product Image"></td>
                             <td>Sample Product</td>
@@ -49,7 +79,7 @@
                                 <a href="#" class="btn btn-sm btn-primary">Edit</a>
                                 <a href="#" class="btn btn-sm btn-danger">Delete</a>
                             </td>
-                        </tr>
+                        </tr> -->
                     </tbody>
                 </table>
             </div>
