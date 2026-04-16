@@ -47,6 +47,14 @@ class ProductController extends Controller
         $product->status = $request->status;
         $product->save();
 
+        if($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/products'), $imageName);
+            $product->image = 'uploads/products/' . $imageName;
+            $product->save();
+        }
+
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
 
